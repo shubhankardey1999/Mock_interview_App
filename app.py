@@ -4,7 +4,7 @@ import PyPDF2
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Agentic Mock Interviewer",
+    page_title="🎓 Smart Mock AI",
     layout="centered"
 )
 
@@ -122,4 +122,5 @@ if st.session_state.started:
     else:
         st.success("🎉 Mock Interview Completed!")
         st.markdown("### ✅ You have answered all questions. Great job!")
+
 
