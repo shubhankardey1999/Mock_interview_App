@@ -1,4 +1,4 @@
-limport streamlit as st
+import streamlit as st
 import google.generativeai as genai
 
 # ---------------- PAGE CONFIG ----------------
@@ -83,5 +83,6 @@ if st.session_state.question:
 
         st.subheader("⭐ Final Rating")
         st.write(rating_response.text)
+
 
 
