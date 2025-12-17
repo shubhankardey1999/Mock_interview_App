@@ -38,7 +38,7 @@ job_role = st.text_input("Job Role (e.g., Software Engineer, Marketing Executive
 
 # ---------------- STEP 2: JOB DESCRIPTION ----------------
 st.markdown("### 📄 Job Description")
-jd_text = st.text_area("Paste Job Description (OR upload PDF below)", height=150)
+jd_text = st.text_area("Write Job Description (OR upload PDF below)", height=150)
 
 jd_pdf = st.file_uploader("Upload Job Description (PDF only)", type=["pdf"])
 if jd_pdf:
@@ -122,3 +122,4 @@ if st.session_state.started:
     else:
         st.success("🎉 Mock Interview Completed!")
         st.markdown("### ✅ You have answered all questions. Great job!")
+
