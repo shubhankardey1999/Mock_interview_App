@@ -7,7 +7,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🤖 🚀 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation")
+st.title("🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀")
 
 # ---------------- GEMINI CONFIG ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -18,11 +18,11 @@ if "question" not in st.session_state:
     st.session_state.question = None
 
 # ---------------- STEP 1 ----------------
-st.markdown("### **Step 1: Enter the role you're preparing for**")
+st.markdown("### **Enter the role you're preparing for**")
 job_role = st.text_input("Enter Role (e.g., Software Engineer, Data Analyst)")
 
 # ---------------- STEP 2 ----------------
-st.markdown("### **Step 2: Click below to get a question**")
+st.markdown("### **Click below to get a question**")
 
 if st.button("🧠 Generate Interview Question") and job_role.strip():
     question_prompt = f"""
@@ -38,7 +38,7 @@ if st.button("🧠 Generate Interview Question") and job_role.strip():
 
 # ---------------- STEP 3 ----------------
 if st.session_state.question:
-    st.markdown("### **Step 3: Write your answer below**")
+    st.markdown("### **Write your answer below**")
     user_answer = st.text_area("Your Answer", height=200)
 
     if st.button("📊 Generate Feedback") and user_answer.strip():
