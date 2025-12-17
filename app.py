@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+import PyPDF2
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -11,78 +12,113 @@ st.title("🤖 Leveraging Agentic AI for Automated Interview Questioning and Per
 
 # ---------------- GEMINI CONFIG ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
+
+# ---------------- HELPER FUNCTION ----------------
+def extract_text_from_pdf(uploaded_file):
+    reader = PyPDF2.PdfReader(uploaded_file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
 
 # ---------------- SESSION STATE ----------------
-if "question" not in st.session_state:
-    st.session_state.question = None
+if "questions" not in st.session_state:
+    st.session_state.questions = []
 
-# ---------------- STEP 1 ----------------
-st.markdown("### **Enter the role you're preparing for**")
-job_role = st.text_input("Enter Role (e.g., Software Engineer, Data Analyst)")
+if "current_q" not in st.session_state:
+    st.session_state.current_q = 0
 
-# ---------------- STEP 2 ----------------
-st.markdown("### **Click below to get a question**")
+if "started" not in st.session_state:
+    st.session_state.started = False
 
-if st.button("🧠 Generate Interview Question") and job_role.strip():
+# ---------------- STEP 1: ROLE ----------------
+st.markdown("### 🧑‍💼 Enter Job Role")
+job_role = st.text_input("Job Role (e.g., Software Engineer)")
+
+# ---------------- STEP 2: JOB DESCRIPTION ----------------
+st.markdown("### 📄 Job Description")
+jd_text = st.text_area("Paste Job Description (OR upload PDF below)", height=150)
+
+jd_pdf = st.file_uploader("Upload Job Description (PDF only)", type=["pdf"])
+if jd_pdf:
+    jd_text = extract_text_from_pdf(jd_pdf)
+
+# ---------------- STEP 3: RESUME ----------------
+st.markdown("### 📑 Upload Resume (PDF only)")
+resume_pdf = st.file_uploader("Upload Resume", type=["pdf"])
+resume_text = extract_text_from_pdf(resume_pdf) if resume_pdf else ""
+
+# ---------------- STEP 4: GENERATE QUESTIONS ----------------
+if st.button("🚀 Start Mock Interview") and job_role and jd_text and resume_text:
+
     question_prompt = f"""
-    You are an expert technical interviewer.
-    Ask ONE challenging and role-relevant interview question for a {job_role}.
+    You are an expert interviewer.
+
+    Job Role:
+    {job_role}
+
+    Job Description:
+    {jd_text}
+
+    Candidate Resume:
+    {resume_text}
+
+    Generate 6 to 10 interview questions.
+    Questions should be:
+    - Resume-based
+    - Job-description aligned
+    - Increasing in difficulty
+    - Technical + behavioral mix
+
+    Return ONLY numbered questions.
     """
 
     response = model.generate_content(question_prompt)
-    st.session_state.question = response.text.strip()
+    raw_questions = response.text.strip().split("\n")
 
-    st.markdown("#### 🗣 Interview Question")
-    st.write(st.session_state.question)
+    st.session_state.questions = [q for q in raw_questions if q.strip()]
+    st.session_state.current_q = 0
+    st.session_state.started = True
 
-# ---------------- STEP 3 ----------------
-if st.session_state.question:
-    st.markdown("### **Write your answer below**")
-    user_answer = st.text_area("Your Answer", height=200)
+# ---------------- INTERVIEW FLOW ----------------
+if st.session_state.started:
 
-    if st.button("📊 Generate Feedback") and user_answer.strip():
+    if st.session_state.current_q < len(st.session_state.questions):
 
-        # ---------- FEEDBACK ----------
-        feedback_prompt = f"""
-        You are a professional interviewer. Here is the question and candidate's answer.
+        st.markdown(f"## 🗣 Question {st.session_state.current_q + 1}")
+        st.write(st.session_state.questions[st.session_state.current_q])
 
-        Question:
-        {st.session_state.question}
+        answer = st.text_area("Your Answer", height=200)
 
-        Candidate Answer:
-        {user_answer}
+        if st.button("📊 Submit Answer") and answer.strip():
 
-        Provide structured feedback in bullet points covering:
-        - Strengths (within 300 words)
-        - Weaknesses (within 300 words)
-        - How the answer can be improved (within 100 words)
-        - sample answer 
-        """
+            # -------- FEEDBACK --------
+            feedback_prompt = f"""
+            You are a professional interviewer.
 
-        feedback_response = model.generate_content(feedback_prompt)
+            Question:
+            {st.session_state.questions[st.session_state.current_q]}
 
-        st.subheader("🧠 AI Feedback")
-        st.write(feedback_response.text)
+            Candidate Answer:
+            {answer}
 
-        # ---------- RATING ----------
-        rating_prompt = f"""
-        You are an expert interviewer. Based on the following question and candidate's answer, give a rating out of 10.
+            Provide feedback:
+            - Strengths (≤300 words)
+            - Weaknesses (≤300 words)
+            - Improvement suggestions (≤100 words)
+            - Sample ideal answer
+            """
 
-        Question:
-        {st.session_state.question}
+            feedback = model.generate_content(feedback_prompt)
 
-        Answer:
-        {user_answer}
+            st.subheader("🧠 AI Feedback")
+            st.write(feedback.text)
 
-        Give a rating strictly in this format:
-        Rating: X/10
-        Reason: one-line justification
-        """
+            # Move to next question
+            st.session_state.current_q += 1
+            st.button("➡️ Next Question")
 
-        rating_response = model.generate_content(rating_prompt)
-
-        st.subheader("⭐ Final Rating")
-        st.write(rating_response.text)
-
-
+    else:
+        st.success("🎉 Mock Interview Completed!")
+        st.markdown("### ✅ You have answered all questions. Great job!")
