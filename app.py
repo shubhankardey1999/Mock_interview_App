@@ -12,7 +12,7 @@ st.title("🤖 Leveraging Agentic AI for Automated Interview Questioning and Per
 
 # ---------------- GEMINI CONFIG ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # ---------------- HELPER FUNCTION ----------------
 def extract_text_from_pdf(uploaded_file):
@@ -34,7 +34,7 @@ if "started" not in st.session_state:
 
 # ---------------- STEP 1: ROLE ----------------
 st.markdown("### 🧑‍💼 Enter Job Role")
-job_role = st.text_input("Job Role (e.g., Software Engineer)")
+job_role = st.text_input("Job Role (e.g., Software Engineer, Marketing Executive, Data Analyst, HRBP)")
 
 # ---------------- STEP 2: JOB DESCRIPTION ----------------
 st.markdown("### 📄 Job Description")
