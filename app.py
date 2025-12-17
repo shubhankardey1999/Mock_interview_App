@@ -7,7 +7,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🤖 Agentic AI–Based Mock Interview System for Automated Question Generation, Response Evaluation, and Feedback Analysis")
+st.title("🤖 🚀 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation")
 
 # ---------------- GEMINI CONFIG ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -84,4 +84,5 @@ if st.session_state.question:
 
         st.subheader("⭐ Final Rating")
         st.write(rating_response.text)
+
 
