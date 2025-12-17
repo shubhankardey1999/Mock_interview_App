@@ -1,7 +1,7 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 
-# Page config
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Agentic Mock Interviewer",
     layout="centered"
@@ -9,85 +9,77 @@ st.set_page_config(
 
 st.title("🤖 Agentic Mock Interviewer + Feedback Generator")
 
-# Initialize OpenAI client
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# ---------------- GEMINI CONFIG ----------------
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+# ---------------- SESSION STATE ----------------
+if "question" not in st.session_state:
+    st.session_state.question = None
 
 # ---------------- STEP 1 ----------------
 st.markdown("### **Step 1: Enter the role you're preparing for**")
-job_role = st.text_input("Enter Role (e.g., Data Scientist at Google)")
+job_role = st.text_input("Enter Role (e.g., Software Engineer, Data Analyst)")
 
 # ---------------- STEP 2 ----------------
 st.markdown("### **Step 2: Click below to get a question**")
-question = ""
 
-if st.button("🧠 Generate Interview Question"):
-    prompt = f"""
-    You're an expert interviewer.
-    Ask a challenging and relevant interview question for the role: {job_role}.
+if st.button("🧠 Generate Interview Question") and job_role.strip():
+    question_prompt = f"""
+    You are an expert technical interviewer.
+    Ask ONE challenging and role-relevant interview question for a {job_role}.
     """
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
-    )
+    response = model.generate_content(question_prompt)
+    st.session_state.question = response.text.strip()
 
-    question = response.choices[0].message.content
-    st.session_state["question"] = question
-
-    st.markdown(f"#### 🗣 Interview Question:\n{question}")
+    st.markdown("#### 🗣 Interview Question")
+    st.write(st.session_state.question)
 
 # ---------------- STEP 3 ----------------
-if "question" in st.session_state:
+if st.session_state.question:
     st.markdown("### **Step 3: Write your answer below**")
     user_answer = st.text_area("Your Answer", height=200)
 
-    # ---------------- FEEDBACK ----------------
-    if st.button("📊 Generate Feedback"):
+    if st.button("📊 Generate Feedback") and user_answer.strip():
+
+        # ---------- FEEDBACK ----------
         feedback_prompt = f"""
-        You're a professional interviewer.
+        You are a professional interviewer.
 
         Question:
-        {st.session_state['question']}
+        {st.session_state.question}
 
-        Answer:
+        Candidate Answer:
         {user_answer}
 
-        Provide constructive feedback in bullet points including:
+        Provide structured feedback in bullet points covering:
         - Strengths
         - Weaknesses
         - How the answer can be improved
         """
 
-        feedback = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": feedback_prompt}],
-            temperature=0.7
-        )
+        feedback_response = model.generate_content(feedback_prompt)
 
         st.subheader("🧠 AI Feedback")
-        st.markdown(feedback.choices[0].message.content)
+        st.write(feedback_response.text)
 
-        # ---------------- RATING ----------------
+        # ---------- RATING ----------
         rating_prompt = f"""
         You are an expert interviewer.
 
         Question:
-        {st.session_state['question']}
+        {st.session_state.question}
 
         Answer:
         {user_answer}
 
-        Respond in this format only:
+        Give a rating strictly in this format:
         Rating: X/5
-        Reason: <one-line justification>
+        Reason: one-line justification
         """
 
-        rating_response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": rating_prompt}],
-            temperature=0.7
-        )
+        rating_response = model.generate_content(rating_prompt)
 
         st.subheader("⭐ Final Rating")
-        st.markdown(rating_response.choices[0].message.content)
+        st.write(rating_response.text)
