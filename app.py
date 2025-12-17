@@ -11,7 +11,7 @@ st.title("🤖 Agentic Mock Interviewer + Feedback Generator")
 
 # ---------------- GEMINI CONFIG ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # ---------------- SESSION STATE ----------------
 if "question" not in st.session_state:
@@ -83,3 +83,4 @@ if st.session_state.question:
 
         st.subheader("⭐ Final Rating")
         st.write(rating_response.text)
+
