@@ -7,7 +7,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🤖 Agentic Mock Interviewer + Feedback Generator")
+st.title("🤖 Agentic AI–Based Mock Interview System for Automated Question Generation, Response Evaluation, and Feedback Analysis")
 
 # ---------------- GEMINI CONFIG ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -45,7 +45,7 @@ if st.session_state.question:
 
         # ---------- FEEDBACK ----------
         feedback_prompt = f"""
-        You are a professional interviewer.
+        You are a professional interviewer. Here is the question and candidate's answer.
 
         Question:
         {st.session_state.question}
@@ -54,9 +54,10 @@ if st.session_state.question:
         {user_answer}
 
         Provide structured feedback in bullet points covering:
-        - Strengths
-        - Weaknesses
-        - How the answer can be improved
+        - Strengths (within 300 words)
+        - Weaknesses (within 300 words)
+        - How the answer can be improved (within 100 words)
+        - sample answer 
         """
 
         feedback_response = model.generate_content(feedback_prompt)
@@ -66,7 +67,7 @@ if st.session_state.question:
 
         # ---------- RATING ----------
         rating_prompt = f"""
-        You are an expert interviewer.
+        You are an expert interviewer. Based on the following question and candidate's answer, give a rating out of 10.
 
         Question:
         {st.session_state.question}
@@ -75,7 +76,7 @@ if st.session_state.question:
         {user_answer}
 
         Give a rating strictly in this format:
-        Rating: X/5
+        Rating: X/10
         Reason: one-line justification
         """
 
@@ -83,3 +84,4 @@ if st.session_state.question:
 
         st.subheader("⭐ Final Rating")
         st.write(rating_response.text)
+
