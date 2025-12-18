@@ -275,7 +275,7 @@ st.markdown("""
 
 # ================= GEMINI CONFIG =================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash-lite")
 
 def safe_generate(prompt):
     try:
@@ -477,6 +477,7 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
 
 
 
