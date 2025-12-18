@@ -66,7 +66,7 @@ body {
     margin-bottom: 0.4rem;
 }
 
-/* ---------- CARD ---------- */
+/* ---------- CARDS ---------- */
 .card {
     background: rgba(15,23,42,0.92);
     border: 1px solid rgba(79,230,216,0.35);
@@ -75,16 +75,16 @@ body {
     margin-bottom: 1.6rem;
 }
 
-/* ---------- INPUT BACKGROUND ---------- */
+/* ---------- INPUTS ---------- */
 .stTextInput input,
 .stTextArea textarea {
-    background-color: #1E293B;   /* LIGHTER THAN BEFORE */
+    background-color: #1E293B;
     color: #F8FAFC;
     border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.25);
 }
 
-/* ---------- LABEL TEXT ---------- */
+/* ---------- LABELS & PLACEHOLDERS ---------- */
 label,
 .stTextInput label,
 .stTextArea label,
@@ -93,13 +93,11 @@ label,
     font-weight: 500;
 }
 
-/* ---------- PLACEHOLDER TEXT ---------- */
 ::placeholder {
     color: #CBD5E1 !important;
     opacity: 1;
 }
 
-/* ---------- FILE UPLOADER TEXT ---------- */
 .stFileUploader div,
 .stFileUploader span {
     color: #E6FFFA !important;
@@ -137,14 +135,49 @@ hr {
     border: 1px solid rgba(79,230,216,0.35);
 }
 
+/* ---------- DYNAMIC CONTENT VISIBILITY ---------- */
+.question-text {
+    color: #E6FFFA;
+    font-size: 1.15rem;
+    font-weight: 500;
+}
+
+.answer-label {
+    color: #A7F3D0;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.feedback-title {
+    color: #FCD34D;
+    font-weight: 700;
+    margin-top: 0.8rem;
+}
+
+.feedback-text {
+    color: #F8FAFC;
+    line-height: 1.6;
+}
+
+.rating-text {
+    color: #4ADE80;
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.stAlert p {
+    color: #FACC15 !important;
+    font-weight: 500;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # ================= TITLES =================
 st.markdown("""
-<div class="main-title">AI BASED MOCK INTERVIEW APP</div>
+<div class="main-title">🤖 AI BASED MOCK INTERVIEW</div>
 <div class="sub-title">
-🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
+Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
 </div>
 <hr>
 """, unsafe_allow_html=True)
@@ -159,17 +192,22 @@ def safe_generate(prompt):
     except Exception:
         return "⚠️ AI response could not be generated due to API limits."
 
-# ================= PDF TEXT EXTRACTION =================
+# ================= PDF EXTRACTION =================
 def extract_text(file):
     reader = PyPDF2.PdfReader(file)
     return " ".join([p.extract_text() or "" for p in reader.pages])
 
 # ================= SESSION STATE =================
-for key in ["questions", "answers", "feedback", "summary", "started"]:
-    if key not in st.session_state:
-        st.session_state[key] = {} if key in ["answers", "feedback"] else []
-
-st.session_state.started = st.session_state.started or False
+if "questions" not in st.session_state:
+    st.session_state.questions = []
+if "answers" not in st.session_state:
+    st.session_state.answers = {}
+if "feedback" not in st.session_state:
+    st.session_state.feedback = {}
+if "started" not in st.session_state:
+    st.session_state.started = False
+if "summary" not in st.session_state:
+    st.session_state.summary = ""
 
 # ================= JOB ROLE =================
 st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allow_html=True)
@@ -187,7 +225,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Paste Job Description", height=80)
+    jd_text = st.text_area("Paste Job Description", height=170)
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
     if jd_pdf:
         jd_text = extract_text(jd_pdf)
@@ -229,10 +267,12 @@ if st.session_state.started:
 
     for i, q in enumerate(st.session_state.questions):
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown(f"### 🗣 Question {i+1}")
-        st.write(q)
 
-        ans = st.text_area("Your Answer", key=f"a{i}", height=140)
+        st.markdown(f"### 🗣 Question {i+1}")
+        st.markdown(f'<div class="question-text">{q}</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="answer-label">Your Answer</div>', unsafe_allow_html=True)
+        ans = st.text_area("", key=f"a{i}", height=140)
 
         if ans and i not in st.session_state.answers:
             st.session_state.answers[i] = ans
@@ -248,18 +288,19 @@ if st.session_state.started:
             )
 
         if i in st.session_state.feedback:
-            st.markdown("#### 🧠 AI Feedback")
-            st.write(st.session_state.feedback[i])
+            st.markdown('<div class="feedback-title">🧠 AI Feedback</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="feedback-text">{st.session_state.feedback[i]}</div>',
+                unsafe_allow_html=True
+            )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
     if len(st.session_state.answers) == len(st.session_state.questions):
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("### ⭐ Final Rating")
-        st.write(
-            safe_generate(
-                f"Rate interview out of 10. Answers: {st.session_state.answers}"
-            )
+        rating = safe_generate(
+            f"Rate interview out of 10. Answers: {st.session_state.answers}"
         )
-        st.markdown('</div>', unsafe_allow_html=True)
-
+        st.markdown(
+            f'<div class="card"><div class="rating-text">⭐ Final Rating<br>{rating}</div></div>',
+            unsafe_allow_html=True
+        )
