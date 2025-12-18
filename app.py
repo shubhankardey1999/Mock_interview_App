@@ -2,58 +2,110 @@ import streamlit as st
 import google.generativeai as genai
 import PyPDF2
 
-# ---------------- PAGE CONFIG ----------------
+# ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="Smart Mock AI",
-    layout="centered"
+    layout="wide"
 )
 
+# ================= CUSTOM STYLES =================
+st.markdown("""
+<style>
+    body {
+        background-color: #0e1117;
+        color: #e6e6e6;
+    }
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    h1, h2, h3 {
+        color: #4fd1c5;
+    }
+    .stTextInput>div>div>input,
+    .stTextArea textarea {
+        background-color: #1a1f2b;
+        color: white;
+    }
+    .stButton>button {
+        background-color: #4fd1c5;
+        color: black;
+        border-radius: 10px;
+        padding: 0.6em 1.4em;
+        font-weight: 600;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #38b2ac;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀")
+st.markdown("---")
 
-# ---------------- GEMINI CONFIG ----------------
+# ================= GEMINI CONFIG =================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
 
-# ---------------- HELPER FUNCTION ----------------
+# ================= SAFE API CALL =================
+def safe_generate(prompt):
+    try:
+        return model.generate_content(prompt).text
+    except Exception:
+        return "⚠️ AI response could not be generated due to API limits. Please proceed."
+
+# ================= PDF TEXT EXTRACTION =================
 def extract_text_from_pdf(uploaded_file):
     reader = PyPDF2.PdfReader(uploaded_file)
     text = ""
     for page in reader.pages:
-        text += page.extract_text()
+        if page.extract_text():
+            text += page.extract_text()
     return text
 
-# ---------------- SESSION STATE ----------------
-if "questions" not in st.session_state:
-    st.session_state.questions = []
+# ================= SESSION STATE =================
+for key, default in {
+    "questions": [],
+    "current_q": 0,
+    "started": False,
+    "context_summary": ""
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
-if "current_q" not in st.session_state:
-    st.session_state.current_q = 0
+# ================= INPUT SECTION =================
+col1, col2 = st.columns(2)
 
-if "started" not in st.session_state:
-    st.session_state.started = False
+with col1:
+    st.markdown("### 🧑‍💼 Job Role")
+    job_role = st.text_input(
+        "Enter Job Role",
+        placeholder="Business Analyst, Data Analyst, Software Engineer"
+    )
 
-# ---------------- STEP 1: ROLE ----------------
-st.markdown("### 🧑‍💼 Enter Job Role")
-job_role = st.text_input("Job Role (e.g., Software Engineer, Marketing Executive, Data Analyst, HRBP)")
+with col2:
+    st.markdown("### 📄 Job Description")
+    jd_text = st.text_area(
+        "Paste Job Description",
+        height=160
+    )
+    jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
+    if jd_pdf:
+        jd_text = extract_text_from_pdf(jd_pdf)
 
-# ---------------- STEP 2: JOB DESCRIPTION ----------------
-st.markdown("### 📄 Job Description")
-jd_text = st.text_area("Write Job Description (OR upload PDF below)", height=150)
-
-jd_pdf = st.file_uploader("Upload Job Description (PDF only)", type=["pdf"])
-if jd_pdf:
-    jd_text = extract_text_from_pdf(jd_pdf)
-
-# ---------------- STEP 3: RESUME ----------------
 st.markdown("### 📑 Upload Resume (PDF only)")
 resume_pdf = st.file_uploader("Upload Resume", type=["pdf"])
 resume_text = extract_text_from_pdf(resume_pdf) if resume_pdf else ""
 
-# ---------------- STEP 4: GENERATE QUESTIONS ----------------
+st.markdown("---")
+
+# ================= START INTERVIEW =================
 if st.button("🚀 Start Mock Interview") and job_role and jd_text and resume_text:
 
-    question_prompt = f"""
-    You are an expert interviewer.
+    # ---- SUMMARIZE JD + RESUME ONCE ----
+    summary_prompt = f"""
+    Summarize the following into key bullet points (max 150 words total):
 
     Job Role:
     {job_role}
@@ -61,67 +113,65 @@ if st.button("🚀 Start Mock Interview") and job_role and jd_text and resume_te
     Job Description:
     {jd_text}
 
-    Candidate Resume:
+    Resume:
     {resume_text}
-
-    Generate 6 to 10 interview questions.
-    Questions should be:
-    - Resume-based
-    - Job-description aligned
-    - Increasing in difficulty
-    - Technical + behavioral mix
-
-    Return ONLY numbered questions.
     """
 
-    response = model.generate_content(question_prompt)
-    raw_questions = response.text.strip().split("\n")
+    st.session_state.context_summary = safe_generate(summary_prompt)
 
-    st.session_state.questions = [q for q in raw_questions if q.strip()]
+    # ---- GENERATE ONLY 2 QUESTIONS ----
+    question_prompt = f"""
+    Using the following context, generate EXACTLY 2 interview questions.
+    Questions should be role-relevant, resume-based, and analytical.
+
+    Context:
+    {st.session_state.context_summary}
+
+    Return only numbered questions.
+    """
+
+    questions_text = safe_generate(question_prompt)
+    st.session_state.questions = [q for q in questions_text.split("\n") if q.strip()]
     st.session_state.current_q = 0
     st.session_state.started = True
 
-# ---------------- INTERVIEW FLOW ----------------
+    st.experimental_rerun()
+
+# ================= INTERVIEW FLOW =================
 if st.session_state.started:
 
     if st.session_state.current_q < len(st.session_state.questions):
 
         st.markdown(f"## 🗣 Question {st.session_state.current_q + 1}")
-        st.write(st.session_state.questions[st.session_state.current_q])
+        st.markdown(st.session_state.questions[st.session_state.current_q])
 
-        answer = st.text_area("Your Answer", height=200)
+        answer = st.text_area("✍️ Your Answer", height=200)
 
         if st.button("📊 Submit Answer") and answer.strip():
 
-            # -------- FEEDBACK --------
             feedback_prompt = f"""
-            You are a professional interviewer.
-
             Question:
             {st.session_state.questions[st.session_state.current_q]}
 
-            Candidate Answer:
+            Answer:
             {answer}
 
-            Provide feedback:
-            - Strengths (≤300 words)
-            - Weaknesses (≤300 words)
-            - Improvement suggestions (≤100 words)
-            - Sample ideal answer
+            Give concise feedback:
+            - 2 Strengths
+            - 2 Weaknesses
+            - 2 Improvement tips
+            - Short sample improved answer
             """
 
-            feedback = model.generate_content(feedback_prompt)
+            feedback_text = safe_generate(feedback_prompt)
 
             st.subheader("🧠 AI Feedback")
-            st.write(feedback.text)
+            st.write(feedback_text)
 
-            # Move to next question
             st.session_state.current_q += 1
-            st.button("➡️ Next Question")
+            st.experimental_rerun()
 
     else:
         st.success("🎉 Mock Interview Completed!")
-        st.markdown("### ✅ You have answered all questions. Great job!")
-
-
-
+        st.markdown("### ✅ You have completed all interview questions.")
+        st.markdown("Thank you for using **Smart Mock AI**.")
