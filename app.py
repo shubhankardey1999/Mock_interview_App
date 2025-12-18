@@ -188,13 +188,31 @@ hr {
     color: #4ADE80;
     font-size: 1.3rem;
     font-weight: 800;
+    text-align: center;
+}
+
+.rating-justification {
+    color: #CBD5E1;
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-style: italic;
 }
 
 /* ---------- CENTERED BUTTON CONTAINER ---------- */
-.center-button {
+.button-container {
     display: flex;
     justify-content: center;
     margin: 2rem 0;
+}
+
+.button-container .stButton {
+    display: inline-block;
+}
+
+/* ---------- SUBMIT BUTTON STYLE ---------- */
+.submit-btn {
+    margin-top: 1rem;
 }
 
 /* ---------- ALERT ---------- */
@@ -240,6 +258,8 @@ if "started" not in st.session_state:
     st.session_state.started = False
 if "summary" not in st.session_state:
     st.session_state.summary = ""
+if "submitted" not in st.session_state:
+    st.session_state.submitted = {}
 
 # ================= JOB ROLE =================
 st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allow_html=True)
@@ -271,7 +291,7 @@ with col2:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= CENTERED START BUTTON =================
-st.markdown('<div class="center-button">', unsafe_allow_html=True)
+st.markdown('<div class="button-container">', unsafe_allow_html=True)
 if st.button("🚀 Start Interview", key="start_interview") and job_role and jd_text and resume_text:
     
     st.session_state.summary = safe_generate(
@@ -294,6 +314,9 @@ if st.button("🚀 Start Interview", key="start_interview") and job_role and jd_
     
     st.session_state.questions = [q for q in q_text.split("\n") if q.strip()]
     st.session_state.started = True
+    st.session_state.answers = {}
+    st.session_state.feedback = {}
+    st.session_state.submitted = {}
     st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -314,57 +337,96 @@ if st.session_state.started:
         st.markdown('<div class="answer-label">Your Answer</div>', unsafe_allow_html=True)
         ans = st.text_area("", key=f"a{i}", height=140)
         
-        if ans and i not in st.session_state.answers:
-            st.session_state.answers[i] = ans
-            
-            # Request structured HTML feedback from Gemini
-            feedback_prompt = f"""
-            Question: {q}
-            Answer: {ans}
-            
-            Provide feedback in this EXACT HTML format:
-            
-            <h4 class="feedback-header strengths-title">Strengths</h4>
-            <div class="feedback-content">
-            <ul>
-            <li>Point 1 (max 15 words)</li>
-            <li>Point 2 (max 15 words)</li>
-            </ul>
-            </div>
-            
-            <h4 class="feedback-header weaknesses-title">Weaknesses</h4>
-            <div class="feedback-content">
-            <ul>
-            <li>Point 1 (max 15 words)</li>
-            <li>Point 2 (max 15 words)</li>
-            </ul>
-            </div>
-            
-            <h4 class="feedback-header improvement-title">Improvement Tips</h4>
-            <div class="feedback-content">
-            <ul>
-            <li>Tip 1 (max 15 words)</li>
-            <li>Tip 2 (max 15 words)</li>
-            </ul>
-            </div>
-            """
-            
-            st.session_state.feedback[i] = safe_generate(feedback_prompt)
+        # Submit Button for each question
+        st.markdown('<div class="button-container submit-btn">', unsafe_allow_html=True)
+        if st.button(f"✅ Submit Answer {i+1}", key=f"submit_{i}"):
+            if ans:
+                st.session_state.answers[i] = ans
+                st.session_state.submitted[i] = True
+                
+                # Request structured HTML feedback from Gemini
+                feedback_prompt = f"""
+                Question: {q}
+                Answer: {ans}
+                
+                Provide feedback in this EXACT HTML format:
+                
+                <h4 class="feedback-header strengths-title">Strengths</h4>
+                <div class="feedback-content">
+                <ul>
+                <li>Point 1 (max 15 words)</li>
+                <li>Point 2 (max 15 words)</li>
+                </ul>
+                </div>
+                
+                <h4 class="feedback-header weaknesses-title">Weaknesses</h4>
+                <div class="feedback-content">
+                <ul>
+                <li>Point 1 (max 15 words)</li>
+                <li>Point 2 (max 15 words)</li>
+                </ul>
+                </div>
+                
+                <h4 class="feedback-header improvement-title">Improvement Tips</h4>
+                <div class="feedback-content">
+                <ul>
+                <li>Tip 1 (max 15 words)</li>
+                <li>Tip 2 (max 15 words)</li>
+                </ul>
+                </div>
+                """
+                
+                st.session_state.feedback[i] = safe_generate(feedback_prompt)
+                st.rerun()
+            else:
+                st.warning("Please enter an answer before submitting.")
+        st.markdown('</div>', unsafe_allow_html=True)
         
-        if i in st.session_state.feedback:
-            # Render the HTML feedback
-            st.markdown(
-                f'<div class="feedback-content">{st.session_state.feedback[i]}</div>',
-                unsafe_allow_html=True
-            )
+        # Show feedback if submitted
+        if i in st.session_state.submitted and st.session_state.submitted[i]:
+            st.markdown("---")
+            if i in st.session_state.feedback:
+                # Render the HTML feedback
+                st.markdown(
+                    f'<div class="feedback-content">{st.session_state.feedback[i]}</div>',
+                    unsafe_allow_html=True
+                )
         
         st.markdown('</div>', unsafe_allow_html=True)
     
+    # Final Rating
     if len(st.session_state.answers) == len(st.session_state.questions):
-        rating = safe_generate(
-            f"Rate interview out of 10. Answers: {st.session_state.answers}"
-        )
+        rating_prompt = f"""
+        Rate this interview out of 10.
+        Questions: {st.session_state.questions}
+        Answers: {st.session_state.answers}
+        
+        Provide output in this exact format:
+        RATING: X/10
+        JUSTIFICATION: [one-line justification here]
+        """
+        
+        rating_response = safe_generate(rating_prompt)
+        
+        # Parse the response
+        rating = "7/10"
+        justification = "Good overall performance with room for improvement."
+        
+        if "RATING:" in rating_response:
+            lines = rating_response.split("\n")
+            for line in lines:
+                if line.startswith("RATING:"):
+                    rating = line.replace("RATING:", "").strip()
+                elif line.startswith("JUSTIFICATION:"):
+                    justification = line.replace("JUSTIFICATION:", "").strip()
+        
         st.markdown(
-            f'<div class="card"><div class="rating-text">⭐ Final Rating<br>{rating}</div></div>',
+            f'''
+            <div class="card">
+                <div class="rating-text">⭐ Overall Interview Rating</div>
+                <div class="rating-text">{rating}</div>
+                <div class="rating-justification">"{justification}"</div>
+            </div>
+            ''',
             unsafe_allow_html=True
         )
