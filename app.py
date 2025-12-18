@@ -281,9 +281,9 @@ if st.session_state.started:
                 Question: {q}
                 Answer: {ans}
                 Provide:
-                - 2 strengths
-                - 2 weaknesses
-                - 2 improvement tips
+                - strengths (only 2 points, word limit < 100) 
+                - weaknesses (only 2 points, word limit < 100)
+                - improvement tips (only 2 points, word limit < 100)
                 """
             )
 
@@ -304,4 +304,5 @@ if st.session_state.started:
             f'<div class="card"><div class="rating-text">⭐ Final Rating<br>{rating}</div></div>',
             unsafe_allow_html=True
         )
+
 
