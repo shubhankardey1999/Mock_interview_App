@@ -5,24 +5,21 @@ import base64
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
-    page_title="Smart Mock AI",
+    page_title="AI Based Mock Interview",
     layout="wide"
 )
 
 # ================= BACKGROUND =================
-def set_bg(image_path):
-    with open(image_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
+def set_background(image_path):
+    with open(image_path, "rb") as img:
+        encoded = base64.b64encode(img.read()).decode()
 
     st.markdown(
         f"""
         <style>
         .stApp {{
             background:
-                linear-gradient(
-                    rgba(8, 12, 20, 0.92),
-                    rgba(8, 12, 20, 0.92)
-                ),
+                linear-gradient(rgba(6,10,18,0.93), rgba(6,10,18,0.93)),
                 url("data:image/png;base64,{encoded}");
             background-size: cover;
             background-position: center;
@@ -33,28 +30,35 @@ def set_bg(image_path):
         unsafe_allow_html=True
     )
 
-set_bg("background.png")
+set_background("background.png")
 
-# ================= UI STYLE =================
+# ================= STYLING =================
 st.markdown("""
 <style>
 
-/* -------- GLOBAL -------- */
+/* ---------- GLOBAL ---------- */
 body {
     font-family: "Segoe UI", sans-serif;
-    color: #EAFBFF;
+    color: #F8FAFC;
 }
 
-/* -------- TITLE -------- */
-.center-title {
+/* ---------- TITLES ---------- */
+.main-title {
     text-align: center;
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 2.6rem;
+    font-weight: 800;
     color: #4FE6D8;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.2rem;
 }
 
-/* -------- SECTION HEADERS -------- */
+.sub-title {
+    text-align: center;
+    font-size: 1.25rem;
+    color: #E5F9F6;
+    margin-bottom: 1.4rem;
+}
+
+/* ---------- SECTION HEADERS ---------- */
 .section-title {
     font-size: 1.35rem;
     font-weight: 600;
@@ -62,38 +66,38 @@ body {
     margin-bottom: 0.4rem;
 }
 
-/* -------- CARD -------- */
+/* ---------- CARDS ---------- */
 .card {
-    background: rgba(15, 22, 35, 0.95);
-    border: 1px solid rgba(79, 230, 216, 0.25);
+    background: rgba(15,23,42,0.95);
+    border: 1px solid rgba(79,230,216,0.35);
     border-radius: 14px;
     padding: 1.4rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.6rem;
 }
 
-/* -------- INPUTS -------- */
+/* ---------- INPUTS ---------- */
 .stTextInput input,
 .stTextArea textarea {
-    background-color: #111827;
-    color: #EAFBFF;
+    background-color: #0F172A;
+    color: #F8FAFC;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* -------- CENTER INPUT -------- */
-.center-box {
+/* ---------- JOB ROLE CENTER ---------- */
+.center-input {
     display: flex;
     justify-content: center;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.4rem;
 }
 
-.center-box input {
-    width: 45%;
+.center-input input {
+    width: 40%;
     text-align: center;
     font-size: 1rem;
 }
 
-/* -------- BUTTON -------- */
+/* ---------- BUTTON ---------- */
 .stButton>button {
     background: linear-gradient(90deg, #4FE6D8, #38BDF8);
     color: #020617;
@@ -102,10 +106,12 @@ body {
     padding: 0.6em 1.6em;
     border: none;
 }
+
 .stButton>button:hover {
     background: linear-gradient(90deg, #38BDF8, #4FE6D8);
 }
 
+/* ---------- HR ---------- */
 hr {
     border: 1px solid rgba(79,230,216,0.35);
 }
@@ -113,10 +119,11 @@ hr {
 </style>
 """, unsafe_allow_html=True)
 
-# ================= TITLE (ONE LINE, CENTERED) =================
+# ================= TITLES =================
 st.markdown("""
-<div class="center-title">
-🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
+<div class="main-title">🤖 AI BASED MOCK INTERVIEW</div>
+<div class="sub-title">
+Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
 </div>
 <hr>
 """, unsafe_allow_html=True)
@@ -129,27 +136,23 @@ def safe_generate(prompt):
     try:
         return model.generate_content(prompt).text
     except Exception:
-        return "⚠️ AI response unavailable due to API limits."
+        return "⚠️ AI response could not be generated due to API limits."
 
 # ================= PDF READER =================
-def extract_text_from_pdf(file):
+def extract_text(file):
     reader = PyPDF2.PdfReader(file)
     return " ".join([p.extract_text() or "" for p in reader.pages])
 
 # ================= SESSION STATE =================
-for k, v in {
-    "questions": [],
-    "answers": {},
-    "feedback": {},
-    "started": False,
-    "summary": ""
-}.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
+for key in ["questions", "answers", "feedback", "summary", "started"]:
+    if key not in st.session_state:
+        st.session_state[key] = {} if key in ["answers", "feedback"] else []
+
+st.session_state.started = st.session_state.started or False
 
 # ================= JOB ROLE =================
 st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allow_html=True)
-st.markdown('<div class="center-box">', unsafe_allow_html=True)
+st.markdown('<div class="center-input">', unsafe_allow_html=True)
 job_role = st.text_input(
     "Job Role",
     placeholder="Financial Analyst, Business Analyst",
@@ -163,44 +166,44 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Paste Job Description", height=160)
+    jd_text = st.text_area("Paste Job Description", height=170)
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
     if jd_pdf:
-        jd_text = extract_text_from_pdf(jd_pdf)
+        jd_text = extract_text(jd_pdf)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📑 Resume (PDF)</div>', unsafe_allow_html=True)
     resume_pdf = st.file_uploader("Upload Resume", type=["pdf"])
-    resume_text = extract_text_from_pdf(resume_pdf) if resume_pdf else ""
+    resume_text = extract_text(resume_pdf) if resume_pdf else ""
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= START =================
+# ================= START INTERVIEW =================
 if st.button("🚀 Start Interview") and job_role and jd_text and resume_text:
 
-    summary_prompt = f"""
-    Summarize into bullet points (max 120 words):
-    Role: {job_role}
-    JD: {jd_text}
-    Resume: {resume_text}
-    """
+    st.session_state.summary = safe_generate(
+        f"""
+        Summarize concisely:
+        Role: {job_role}
+        JD: {jd_text}
+        Resume: {resume_text}
+        """
+    )
 
-    st.session_state.summary = safe_generate(summary_prompt)
+    q_text = safe_generate(
+        f"""
+        Generate EXACTLY 2 interview questions.
+        Context:
+        {st.session_state.summary}
+        """
+    )
 
-    q_prompt = f"""
-    Generate EXACTLY 2 interview questions from this context.
-    Return only numbered questions.
-    Context:
-    {st.session_state.summary}
-    """
-
-    q_text = safe_generate(q_prompt)
     st.session_state.questions = [q for q in q_text.split("\n") if q.strip()]
     st.session_state.started = True
     st.experimental_rerun()
 
-# ================= INTERVIEW =================
+# ================= INTERVIEW FLOW =================
 if st.session_state.started:
 
     for i, q in enumerate(st.session_state.questions):
@@ -208,18 +211,18 @@ if st.session_state.started:
         st.markdown(f"### 🗣 Question {i+1}")
         st.write(q)
 
-        answer = st.text_area("Your Answer", key=f"a{i}", height=140)
+        ans = st.text_area("Your Answer", key=f"a{i}", height=140)
 
-        if answer and i not in st.session_state.answers:
-            st.session_state.answers[i] = answer
+        if ans and i not in st.session_state.answers:
+            st.session_state.answers[i] = ans
             st.session_state.feedback[i] = safe_generate(
                 f"""
                 Question: {q}
-                Answer: {answer}
-                Give:
+                Answer: {ans}
+                Provide:
                 - 2 strengths
                 - 2 weaknesses
-                - 2 improvements
+                - 2 improvement tips
                 """
             )
 
