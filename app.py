@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import PyPDF2
 import base64
+import re
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
@@ -48,14 +49,14 @@ body {
     font-weight: 800;
     color: #4FE6D8;
     margin-bottom: 0.25rem;
-    margin-top: 4.5rem !important;
+    margin-top: 1.5rem !important;
 }
 
 .sub-title {
     text-align: center;
     font-size: 1.25rem;
     color: #E6FFFA;
-    margin-bottom: 2.4rem;
+    margin-bottom: 1.4rem;
 }
 
 /* ---------- SECTION HEADERS ---------- */
@@ -122,14 +123,14 @@ label,
     color: #020617;
     font-weight: 700;
     border-radius: 10px;
-    padding: 0.6em 1.2em !important; /* Reduced padding for narrower buttons */
+    padding: 0.6em 1.2em !important;
     border: none;
     display: block;
     margin-left: auto;
     margin-right: auto;
-    min-width: 180px !important; /* Set minimum width */
+    min-width: 180px !important;
     width: auto !important;
-    max-width: 200px !important; /* Set maximum width */
+    max-width: 200px !important;
 }
 
 .stButton>button:hover {
@@ -275,13 +276,37 @@ st.markdown("""
 
 # ================= GEMINI CONFIG =================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash-lite")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
 
 def safe_generate(prompt):
     try:
         return model.generate_content(prompt).text
     except Exception:
         return "⚠️ AI response could not be generated due to API limits."
+
+# ================= CLEAN FEEDBACK TEXT =================
+def clean_feedback_text(feedback):
+    """Remove unwanted HTML tags and artifacts from feedback text"""
+    if not feedback:
+        return ""
+    
+    # Remove triple backticks and html markers
+    feedback = re.sub(r'```html|```', '', feedback, flags=re.IGNORECASE)
+    
+    # Remove any stray quotes at the beginning or end
+    feedback = feedback.strip().strip('"').strip("'")
+    
+    # Remove any "html" text that might appear at the beginning
+    if feedback.lower().startswith('html'):
+        feedback = feedback[4:].strip()
+    
+    # Remove any markdown code blocks
+    feedback = re.sub(r'^```.*?```', '', feedback, flags=re.DOTALL | re.MULTILINE)
+    
+    # Clean up extra whitespace
+    feedback = re.sub(r'\n\s*\n', '\n\n', feedback)
+    
+    return feedback.strip()
 
 # ================= PDF EXTRACTION =================
 def extract_text(file):
@@ -335,7 +360,6 @@ with col2:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= CENTERED START BUTTON =================
-# Use narrow button container
 st.markdown('<div class="narrow-button-container">', unsafe_allow_html=True)
 if st.button("🚀 Start Interview", key="start_interview", use_container_width=False):
     if job_role and (jd_text or jd_pdf) and resume_pdf:
@@ -396,7 +420,7 @@ if st.session_state.started:
                 Question: {q}
                 Answer: {ans}
                 
-                Provide feedback in this EXACT HTML format:
+                Provide feedback in this EXACT HTML format (NO backticks, NO code blocks, just plain HTML):
                 
                 <h4 class="feedback-header strengths-title">Strengths</h4>
                 <div class="feedback-content">
@@ -421,9 +445,13 @@ if st.session_state.started:
                 <li>Tip 2 (max 15 words)</li>
                 </ul>
                 </div>
+                
+                IMPORTANT: Do NOT wrap this in ```html or any code blocks. Just provide the HTML directly.
                 """
                 
-                st.session_state.feedback[i] = safe_generate(feedback_prompt)
+                raw_feedback = safe_generate(feedback_prompt)
+                # Clean the feedback before storing
+                st.session_state.feedback[i] = clean_feedback_text(raw_feedback)
                 st.rerun()
             else:
                 st.warning("Please enter an answer before submitting.")
@@ -432,8 +460,8 @@ if st.session_state.started:
         # Show feedback if submitted
         if i in st.session_state.submitted and st.session_state.submitted[i]:
             st.markdown("---")
-            if i in st.session_state.feedback:
-                # Render the HTML feedback
+            if i in st.session_state.feedback and st.session_state.feedback[i]:
+                # Render the cleaned HTML feedback
                 st.markdown(
                     f'<div class="feedback-content">{st.session_state.feedback[i]}</div>',
                     unsafe_allow_html=True
@@ -477,7 +505,3 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
-
-
-
-
