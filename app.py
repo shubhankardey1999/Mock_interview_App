@@ -19,7 +19,7 @@ def set_background(image_path):
         <style>
         .stApp {{
             background:
-                linear-gradient(rgba(6,10,18,0.88), rgba(6,10,18,0.88)),
+                linear-gradient(rgba(5,12,22,0.82), rgba(5,12,22,0.82)),
                 url("data:image/png;base64,{encoded}");
             background-size: cover;
             background-position: center;
@@ -45,34 +45,34 @@ body {
 /* ---------- TITLES ---------- */
 .main-title {
     text-align: center;
-    font-size: 2.6rem;
-    font-weight: 800;
-    color: #4FE6D8;
-    margin-bottom: 0.25rem;
+    font-size: 2.7rem;
+    font-weight: 900;
+    color: #5EEAD4;
+    margin-bottom: 0.3rem;
 }
 
 .sub-title {
     text-align: center;
     font-size: 1.25rem;
-    color: #E6FFFA;
-    margin-bottom: 1.4rem;
+    color: #E0F2FE;
+    margin-bottom: 1.6rem;
 }
 
 /* ---------- SECTION HEADERS ---------- */
 .section-title {
     font-size: 1.35rem;
-    font-weight: 600;
-    color: #4FE6D8;
-    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: #67E8F9;
+    margin-bottom: 0.6rem;
 }
 
 /* ---------- CARDS ---------- */
 .card {
-    background: rgba(15,23,42,0.92);
-    border: 1px solid rgba(79,230,216,0.35);
-    border-radius: 14px;
-    padding: 1.4rem;
-    margin-bottom: 1.6rem;
+    background: rgba(15,23,42,0.90);
+    border: 1px solid rgba(94,234,212,0.45);
+    border-radius: 16px;
+    padding: 1.6rem;
+    margin-bottom: 1.8rem;
 }
 
 /* ---------- INPUTS ---------- */
@@ -80,94 +80,105 @@ body {
 .stTextArea textarea {
     background-color: #1E293B;
     color: #F8FAFC;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
-/* ---------- LABELS & PLACEHOLDERS ---------- */
+/* ---------- LABELS ---------- */
 label,
 .stTextInput label,
 .stTextArea label,
 .stFileUploader label {
-    color: #E6FFFA !important;
-    font-weight: 500;
+    color: #E5F9F6 !important;
+    font-weight: 600;
 }
 
+/* ---------- PLACEHOLDER ---------- */
 ::placeholder {
     color: #CBD5E1 !important;
     opacity: 1;
 }
 
+/* ---------- FILE UPLOADER ---------- */
 .stFileUploader div,
 .stFileUploader span {
-    color: #E6FFFA !important;
+    color: #E5F9F6 !important;
 }
 
 /* ---------- JOB ROLE CENTER ---------- */
 .center-input {
     display: flex;
     justify-content: center;
-    margin-bottom: 1.4rem;
+    margin-bottom: 1.6rem;
 }
 
 .center-input input {
-    width: 40%;
+    width: 38%;
     text-align: center;
     font-size: 1rem;
 }
 
 /* ---------- BUTTON ---------- */
+.center-btn {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.2rem;
+}
+
 .stButton>button {
-    background: linear-gradient(90deg, #4FE6D8, #38BDF8);
+    background: linear-gradient(90deg, #5EEAD4, #38BDF8);
     color: #020617;
-    font-weight: 700;
-    border-radius: 10px;
-    padding: 0.6em 1.6em;
+    font-weight: 800;
+    border-radius: 12px;
+    padding: 0.7em 2em;
     border: none;
+    font-size: 1rem;
 }
 
 .stButton>button:hover {
-    background: linear-gradient(90deg, #38BDF8, #4FE6D8);
+    background: linear-gradient(90deg, #38BDF8, #5EEAD4);
 }
 
-/* ---------- HR ---------- */
-hr {
-    border: 1px solid rgba(79,230,216,0.35);
-}
-
-/* ---------- DYNAMIC CONTENT VISIBILITY ---------- */
+/* ---------- QUESTION ---------- */
 .question-text {
-    color: #E6FFFA;
+    color: #E0F2FE;
     font-size: 1.15rem;
-    font-weight: 500;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
 }
 
+/* ---------- ANSWER ---------- */
 .answer-label {
     color: #A7F3D0;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 0.3rem;
 }
 
+/* ---------- FEEDBACK ---------- */
 .feedback-title {
-    color: #FCD34D;
-    font-weight: 700;
-    margin-top: 0.8rem;
+    color: #FACC15;
+    font-weight: 800;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
 }
 
 .feedback-text {
     color: #F8FAFC;
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
+/* ---------- RATING ---------- */
 .rating-text {
     color: #4ADE80;
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-size: 1.35rem;
+    font-weight: 900;
+    text-align: center;
 }
 
-.stAlert p {
-    color: #FACC15 !important;
-    font-weight: 500;
+/* ---------- HR ---------- */
+hr {
+    border: 1px solid rgba(94,234,212,0.45);
 }
 
 </style>
@@ -175,7 +186,7 @@ hr {
 
 # ================= TITLES =================
 st.markdown("""
-<div class="main-title">AI BASED MOCK INTERVIEW APP</div>
+<div class="main-title">AI BASED MOCK INTERVIEW</div>
 <div class="sub-title">
 🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
 </div>
@@ -198,16 +209,15 @@ def extract_text(file):
     return " ".join([p.extract_text() or "" for p in reader.pages])
 
 # ================= SESSION STATE =================
-if "questions" not in st.session_state:
-    st.session_state.questions = []
-if "answers" not in st.session_state:
-    st.session_state.answers = {}
-if "feedback" not in st.session_state:
-    st.session_state.feedback = {}
-if "started" not in st.session_state:
-    st.session_state.started = False
-if "summary" not in st.session_state:
-    st.session_state.summary = ""
+for key, val in {
+    "questions": [],
+    "answers": {},
+    "feedback": {},
+    "started": False,
+    "summary": ""
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = val
 
 # ================= JOB ROLE =================
 st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allow_html=True)
@@ -225,7 +235,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Paste Job Description", height=70)
+    jd_text = st.text_area("Paste Job Description", height=90)
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
     if jd_pdf:
         jd_text = extract_text(jd_pdf)
@@ -239,25 +249,17 @@ with col2:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= START INTERVIEW =================
-if st.button("🚀 Start Interview") and job_role and jd_text and resume_text:
+st.markdown('<div class="center-btn">', unsafe_allow_html=True)
+start = st.button("🚀 Start Interview")
+st.markdown('</div>', unsafe_allow_html=True)
 
+if start and job_role and jd_text and resume_text:
     st.session_state.summary = safe_generate(
-        f"""
-        Summarize concisely:
-        Role: {job_role}
-        Job Description: {jd_text}
-        Resume: {resume_text}
-        """
+        f"Summarize concisely:\nRole:{job_role}\nJD:{jd_text}\nResume:{resume_text}"
     )
-
     q_text = safe_generate(
-        f"""
-        Generate EXACTLY 2 interview questions.
-        Context:
-        {st.session_state.summary}
-        """
+        f"Generate EXACTLY 2 interview questions.\nContext:\n{st.session_state.summary}"
     )
-
     st.session_state.questions = [q for q in q_text.split("\n") if q.strip()]
     st.session_state.started = True
     st.experimental_rerun()
@@ -281,9 +283,9 @@ if st.session_state.started:
                 Question: {q}
                 Answer: {ans}
                 Provide:
-                - strengths (only 2 points, word limit < 100) 
-                - weaknesses (only 2 points, word limit < 100)
-                - improvement tips (only 2 points, word limit < 100)
+                - Strengths (2 points)
+                - Weaknesses (2 points)
+                - Improvement Tips (2 points)
                 """
             )
 
@@ -298,11 +300,9 @@ if st.session_state.started:
 
     if len(st.session_state.answers) == len(st.session_state.questions):
         rating = safe_generate(
-            f"Rate interview out of 10. Answers: {st.session_state.answers}"
+            f"Rate interview out of 10 with one-line reason.\nAnswers:{st.session_state.answers}"
         )
         st.markdown(
             f'<div class="card"><div class="rating-text">⭐ Final Rating<br>{rating}</div></div>',
             unsafe_allow_html=True
         )
-
-
