@@ -72,7 +72,7 @@ body {
 /* ---------- CARDS ---------- */
 .card {
     /*background: rgba(15,23,42,0.92);*/
-    border: 1px solid rgba(79,230,216,0.35);
+    /*border: 1px solid rgba(79,230,216,0.35);*/
     border-radius: 14px;
     padding: 1.4rem;
     margin-bottom: 1.6rem;
@@ -511,6 +511,7 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
 
 
 
