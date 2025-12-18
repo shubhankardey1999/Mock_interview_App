@@ -19,7 +19,7 @@ def set_background(image_path):
         <style>
         .stApp {{
             background:
-                linear-gradient(rgba(6,10,18,0.93), rgba(6,10,18,0.93)),
+                linear-gradient(rgba(6,10,18,0.88), rgba(6,10,18,0.88)),
                 url("data:image/png;base64,{encoded}");
             background-size: cover;
             background-position: center;
@@ -48,13 +48,13 @@ body {
     font-size: 2.6rem;
     font-weight: 800;
     color: #4FE6D8;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.25rem;
 }
 
 .sub-title {
     text-align: center;
     font-size: 1.25rem;
-    color: #E5F9F6;
+    color: #E6FFFA;
     margin-bottom: 1.4rem;
 }
 
@@ -66,22 +66,43 @@ body {
     margin-bottom: 0.4rem;
 }
 
-/* ---------- CARDS ---------- */
+/* ---------- CARD ---------- */
 .card {
-    background: rgba(15,23,42,0.95);
+    background: rgba(15,23,42,0.92);
     border: 1px solid rgba(79,230,216,0.35);
     border-radius: 14px;
     padding: 1.4rem;
     margin-bottom: 1.6rem;
 }
 
-/* ---------- INPUTS ---------- */
+/* ---------- INPUT BACKGROUND ---------- */
 .stTextInput input,
 .stTextArea textarea {
-    background-color: #0F172A;
+    background-color: #1E293B;   /* LIGHTER THAN BEFORE */
     color: #F8FAFC;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* ---------- LABEL TEXT ---------- */
+label,
+.stTextInput label,
+.stTextArea label,
+.stFileUploader label {
+    color: #E6FFFA !important;
+    font-weight: 500;
+}
+
+/* ---------- PLACEHOLDER TEXT ---------- */
+::placeholder {
+    color: #CBD5E1 !important;
+    opacity: 1;
+}
+
+/* ---------- FILE UPLOADER TEXT ---------- */
+.stFileUploader div,
+.stFileUploader span {
+    color: #E6FFFA !important;
 }
 
 /* ---------- JOB ROLE CENTER ---------- */
@@ -138,7 +159,7 @@ def safe_generate(prompt):
     except Exception:
         return "⚠️ AI response could not be generated due to API limits."
 
-# ================= PDF READER =================
+# ================= PDF TEXT EXTRACTION =================
 def extract_text(file):
     reader = PyPDF2.PdfReader(file)
     return " ".join([p.extract_text() or "" for p in reader.pages])
@@ -160,7 +181,7 @@ job_role = st.text_input(
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= JD & RESUME =================
+# ================= JD + RESUME =================
 col1, col2 = st.columns(2)
 
 with col1:
@@ -186,7 +207,7 @@ if st.button("🚀 Start Interview") and job_role and jd_text and resume_text:
         f"""
         Summarize concisely:
         Role: {job_role}
-        JD: {jd_text}
+        Job Description: {jd_text}
         Resume: {resume_text}
         """
     )
@@ -235,7 +256,9 @@ if st.session_state.started:
     if len(st.session_state.answers) == len(st.session_state.questions):
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("### ⭐ Final Rating")
-        st.write(safe_generate(
-            f"Rate interview out of 10. Answers: {st.session_state.answers}"
-        ))
+        st.write(
+            safe_generate(
+                f"Rate interview out of 10. Answers: {st.session_state.answers}"
+            )
+        )
         st.markdown('</div>', unsafe_allow_html=True)
