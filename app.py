@@ -49,14 +49,14 @@ body {
     font-weight: 800;
     color: #4FE6D8;
     margin-bottom: 0.25rem;
-    margin-top: 4.5rem !important;
+    margin-top: 1.5rem !important;
 }
 
 .sub-title {
     text-align: center;
     font-size: 1.25rem;
     color: #E6FFFA;
-    margin-bottom: 2.4rem;
+    margin-bottom: 1.4rem;
 }
 
 /* ---------- SECTION HEADERS ---------- */
@@ -83,6 +83,29 @@ body {
     color: #F8FAFC;
     border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* ---------- HIDE EMPTY WIDGET CONTAINERS ---------- */
+div[data-testid="stTextArea"]:empty,
+div[data-testid="stFileUploader"]:empty,
+div[data-testid="stFileUploader"]:has(div:empty) {
+    display: none !important;
+}
+
+/* Hide the default Streamlit labels */
+[data-testid="stFileUploader"] label,
+[data-testid="stTextArea"] label {
+    display: none !important;
+}
+
+/* Remove empty spaces */
+div[data-testid="stVerticalBlock"] > div:empty {
+    display: none !important;
+}
+
+/* Hide the upload button text that says "Browse files" */
+[data-testid="stFileUploader"] button div p {
+    display: none !important;
 }
 
 /* ---------- LABELS & PLACEHOLDERS ---------- */
@@ -262,6 +285,21 @@ div.stButton > button:empty {
     max-width: 180px !important;
     padding: 0.5em 1em !important;
 }
+
+/* ---------- CUSTOM UPLOADER STYLING ---------- */
+.custom-uploader {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px dashed rgba(79, 230, 216, 0.5);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.custom-uploader p {
+    color: #CBD5E1 !important;
+    margin-bottom: 0.5rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -276,7 +314,7 @@ st.markdown("""
 
 # ================= GEMINI CONFIG =================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash-lite")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
 
 def safe_generate(prompt):
     try:
@@ -334,7 +372,7 @@ st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allo
 st.markdown('<div class="center-input">', unsafe_allow_html=True)
 job_role = st.text_input(
     "Job Role",
-    placeholder="Software Engineer, Marketing Executive, Business Analyst, HRBP..",
+    placeholder="Financial Analyst, Business Analyst",
     label_visibility="collapsed",
     key="job_role_input"
 )
@@ -346,16 +384,45 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Write Job Description", height=70, key="jd_text_area")
-    jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"], key="jd_uploader")
+    
+    # Job Description Text Area
+    jd_text = st.text_area(
+        "Write Job Description", 
+        height=70, 
+        key="jd_text_area",
+        placeholder="Paste or type job description here..."
+    )
+    
+    # Job Description File Uploader
+    st.markdown('<div class="custom-uploader">', unsafe_allow_html=True)
+    st.markdown('<p>Upload Job Description (PDF)</p>', unsafe_allow_html=True)
+    jd_pdf = st.file_uploader(
+        "Upload Job Description PDF",
+        type=["pdf"],
+        key="jd_uploader",
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     if jd_pdf:
         jd_text = extract_text(jd_pdf) or jd_text
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">📑 Resume </div>', unsafe_allow_html=True)
-    resume_pdf = st.file_uploader("Upload Resume (Only PDF format)", type=["pdf"], key="resume_uploader")
+    st.markdown('<div class="section-title">📑 Resume (PDF)</div>', unsafe_allow_html=True)
+    
+    # Resume File Uploader
+    st.markdown('<div class="custom-uploader">', unsafe_allow_html=True)
+    st.markdown('<p>Upload Resume (Only PDF format)</p>', unsafe_allow_html=True)
+    resume_pdf = st.file_uploader(
+        "Upload Resume PDF",
+        type=["pdf"],
+        key="resume_uploader",
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     resume_text = extract_text(resume_pdf) if resume_pdf else ""
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -505,7 +572,3 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
-
-
-
-
