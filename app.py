@@ -49,14 +49,14 @@ body {
     font-weight: 800;
     color: #4FE6D8;
     margin-bottom: 0.25rem;
-    margin-top: 1.5rem !important;
+    margin-top: 4.5rem !important;
 }
 
 .sub-title {
     text-align: center;
     font-size: 1.25rem;
     color: #E6FFFA;
-    margin-bottom: 1.4rem;
+    margin-bottom: 2.4rem;
 }
 
 /* ---------- SECTION HEADERS ---------- */
@@ -86,26 +86,37 @@ body {
 }
 
 /* ---------- HIDE EMPTY WIDGET CONTAINERS ---------- */
-div[data-testid="stTextArea"]:empty,
-div[data-testid="stFileUploader"]:empty,
-div[data-testid="stFileUploader"]:has(div:empty) {
+/* Hide the empty containers that appear before widgets */
+div[data-testid="stTextArea"]:has(textarea:not([value])),
+div[data-testid="stFileUploader"]:not(:has(*[style*="visibility: visible"])),
+.stTextArea > label:empty {
     display: none !important;
 }
 
-/* Hide the default Streamlit labels */
-[data-testid="stFileUploader"] label,
-[data-testid="stTextArea"] label {
+/* Hide empty file uploader states */
+div[data-testid="stFileUploader"]:has(div[style*="display: none"]) {
     display: none !important;
 }
 
-/* Remove empty spaces */
-div[data-testid="stVerticalBlock"] > div:empty {
+/* Hide the default "Drop files to upload" text */
+div[data-testid="stFileUploader"] span:contains("Drop files to upload"),
+div[data-testid="stFileUploader"] span:contains("Drag and drop file here") {
     display: none !important;
 }
 
-/* Hide the upload button text that says "Browse files" */
-[data-testid="stFileUploader"] button div p {
+/* Hide empty labels */
+.stTextArea label[for]:empty,
+.stTextInput label[for]:empty,
+.stFileUploader label[for]:empty {
     display: none !important;
+}
+
+/* Hide the invisible upload button container */
+div[data-testid="stFileUploader"] button[kind="secondary"] {
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+    margin: 0;
 }
 
 /* ---------- LABELS & PLACEHOLDERS ---------- */
@@ -286,19 +297,21 @@ div.stButton > button:empty {
     padding: 0.5em 1em !important;
 }
 
-/* ---------- CUSTOM UPLOADER STYLING ---------- */
-.custom-uploader {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px dashed rgba(79, 230, 216, 0.5);
-    border-radius: 8px;
-    padding: 1.5rem;
+/* ---------- SIMPLIFIED UPLOADER ---------- */
+.simple-uploader {
+    background: rgba(30, 41, 59, 0.6);
+    border: 2px dashed rgba(79, 230, 216, 0.4);
+    border-radius: 10px;
+    padding: 20px;
     text-align: center;
-    margin-top: 0.5rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.custom-uploader p {
-    color: #CBD5E1 !important;
-    margin-bottom: 0.5rem;
+.upload-text {
+    color: #CBD5E1;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -314,7 +327,7 @@ st.markdown("""
 
 # ================= GEMINI CONFIG =================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash-lite")
 
 def safe_generate(prompt):
     try:
@@ -372,7 +385,7 @@ st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allo
 st.markdown('<div class="center-input">', unsafe_allow_html=True)
 job_role = st.text_input(
     "Job Role",
-    placeholder="Financial Analyst, Business Analyst",
+    placeholder="Software Engineer, Marketing Executive, Business Analyst, HRBP..",
     label_visibility="collapsed",
     key="job_role_input"
 )
@@ -385,19 +398,19 @@ with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
     
-    # Job Description Text Area
+    # Job Description Text Area with custom placeholder
     jd_text = st.text_area(
-        "Write Job Description", 
+        "",  # Empty label
         height=70, 
         key="jd_text_area",
-        placeholder="Paste or type job description here..."
+        placeholder="Write or paste job description here..."
     )
     
-    # Job Description File Uploader
-    st.markdown('<div class="custom-uploader">', unsafe_allow_html=True)
-    st.markdown('<p>Upload Job Description (PDF)</p>', unsafe_allow_html=True)
+    # Simple uploader for Job Description
+    st.markdown('<div class="simple-uploader">', unsafe_allow_html=True)
+    st.markdown('<p class="upload-text">Upload Job Description (PDF)</p>', unsafe_allow_html=True)
     jd_pdf = st.file_uploader(
-        "Upload Job Description PDF",
+        "",
         type=["pdf"],
         key="jd_uploader",
         label_visibility="collapsed"
@@ -410,13 +423,13 @@ with col1:
 
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">📑 Resume (PDF)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">📑 Resume</div>', unsafe_allow_html=True)
     
-    # Resume File Uploader
-    st.markdown('<div class="custom-uploader">', unsafe_allow_html=True)
-    st.markdown('<p>Upload Resume (Only PDF format)</p>', unsafe_allow_html=True)
+    # Simple uploader for Resume
+    st.markdown('<div class="simple-uploader">', unsafe_allow_html=True)
+    st.markdown('<p class="upload-text">Upload Resume (Only PDF format)</p>', unsafe_allow_html=True)
     resume_pdf = st.file_uploader(
-        "Upload Resume PDF",
+        "",
         type=["pdf"],
         key="resume_uploader",
         label_visibility="collapsed"
