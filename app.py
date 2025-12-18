@@ -17,39 +17,29 @@ body {
 }
 
 /* ---------- TITLE ---------- */
-.app-title {
-    margin-bottom: 1.5rem;
-}
-.title-line-1 {
+.center-title {
+    text-align: center;
     font-size: 2.4rem;
     font-weight: 700;
     color: #4fd1c5;
-}
-.title-line-2 {
-    font-size: 2.1rem;
-    font-weight: 500;
-    color: #4fd1c5;
-    text-align: center;   /* CENTER SECOND LINE */
-    margin-top: 0.3rem;
+    margin-bottom: 1.5rem;
 }
 
 /* ---------- JOB ROLE ---------- */
-.job-role-container {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-.job-role-title {
-    font-size: 1.4rem;    /* REDUCED SIZE */
-    font-weight: 500;     /* REDUCED WEIGHT */
-    color: #4fd1c5;
-    margin-bottom: 0.5rem;
+.job-role-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
-/* ---------- INPUT STYLING ---------- */
+.job-role-input {
+    width: 50%;   /* REDUCED WIDTH */
+}
+
+/* ---------- INPUTS ---------- */
 .stTextInput input, .stTextArea textarea {
     background-color: #1a1f2b;
     color: white;
-    text-align: center;
 }
 
 /* ---------- BUTTON ---------- */
@@ -64,9 +54,8 @@ body {
 
 # ================= TITLE =================
 st.markdown("""
-<div class="app-title">
-    <div class="title-line-1">🤖 Leveraging Agentic AI</div>
-    <div class="title-line-2">for Automated Interview Questioning and Performance Evaluation 🚀</div>
+<div class="center-title">
+🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
 </div>
 <hr>
 """, unsafe_allow_html=True)
@@ -92,36 +81,36 @@ def extract_text_from_pdf(uploaded_file):
     return text
 
 # ================= SESSION STATE =================
-for key, default in {
-    "questions": [],
-    "answers": {},
-    "feedback": {},
-    "current_q": 0,
-    "started": False,
-    "summary": ""
-}.items():
-    if key not in st.session_state:
-        st.session_state[key] = default
+if "questions" not in st.session_state:
+    st.session_state.questions = []
+if "answers" not in st.session_state:
+    st.session_state.answers = {}
+if "feedback" not in st.session_state:
+    st.session_state.feedback = {}
+if "current_q" not in st.session_state:
+    st.session_state.current_q = 0
+if "started" not in st.session_state:
+    st.session_state.started = False
+if "summary" not in st.session_state:
+    st.session_state.summary = ""
 
-# ================= JOB ROLE (CENTERED & REDUCED) =================
-st.markdown("""
-<div class="job-role-container">
-    <div class="job-role-title">👨‍💼 Job Role</div>
-</div>
-""", unsafe_allow_html=True)
+# ================= JOB ROLE (CENTERED & REDUCED WIDTH) =================
+st.markdown("### 👨‍💼 Job Role")
 
+st.markdown('<div class="job-role-wrapper">', unsafe_allow_html=True)
 job_role = st.text_input(
     "Enter Job Role",
     placeholder="Financial Analyst, Business Analyst, Data Analyst",
     label_visibility="collapsed"
 )
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= JD + RESUME LAYOUT =================
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("## 📄 Job Description")
-    jd_text = st.text_area("Paste Job Description", height=100)
+    jd_text = st.text_area("Paste Job Description", height=180)
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
     if jd_pdf:
         jd_text = extract_text_from_pdf(jd_pdf)
