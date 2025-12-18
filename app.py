@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ================= BACKGROUND IMAGE =================
+# ================= BACKGROUND =================
 def set_bg(image_path):
     with open(image_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
@@ -20,8 +20,8 @@ def set_bg(image_path):
         .stApp {{
             background:
                 linear-gradient(
-                    rgba(10, 15, 25, 0.88),
-                    rgba(10, 15, 25, 0.88)
+                    rgba(8, 12, 20, 0.92),
+                    rgba(8, 12, 20, 0.92)
                 ),
                 url("data:image/png;base64,{encoded}");
             background-size: cover;
@@ -35,66 +35,56 @@ def set_bg(image_path):
 
 set_bg("background.png")
 
-# ================= PREMIUM UI =================
+# ================= UI STYLE =================
 st.markdown("""
 <style>
 
-/* ---------- GLOBAL ---------- */
+/* -------- GLOBAL -------- */
 body {
     font-family: "Segoe UI", sans-serif;
-    color: #e6f1f1;
+    color: #EAFBFF;
 }
 
-/* ---------- TITLE ---------- */
-.app-title {
+/* -------- TITLE -------- */
+.center-title {
     text-align: center;
-    margin-bottom: 2rem;
-}
-.title-main {
-    font-size: 2.6rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #5eead4;
-}
-.title-sub {
-    font-size: 1.9rem;
-    font-weight: 500;
-    color: #5eead4;
+    color: #4FE6D8;
+    margin-bottom: 1.2rem;
 }
 
-/* ---------- GLASS CARD ---------- */
+/* -------- SECTION HEADERS -------- */
+.section-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #4FE6D8;
+    margin-bottom: 0.4rem;
+}
+
+/* -------- CARD -------- */
 .card {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
+    background: rgba(15, 22, 35, 0.95);
+    border: 1px solid rgba(79, 230, 216, 0.25);
     border-radius: 14px;
-    padding: 1.5rem;
+    padding: 1.4rem;
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* ---------- INPUTS ---------- */
-.stTextInput input, .stTextArea textarea {
-    background-color: rgba(20,25,40,0.9);
-    color: #e6f1f1;
+/* -------- INPUTS -------- */
+.stTextInput input,
+.stTextArea textarea {
+    background-color: #111827;
+    color: #EAFBFF;
     border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
 }
 
-/* ---------- BUTTON ---------- */
-.stButton>button {
-    background: linear-gradient(90deg, #5eead4, #38bdf8);
-    color: #020617;
-    font-weight: 700;
-    border-radius: 10px;
-    padding: 0.6em 1.6em;
-    border: none;
-}
-.stButton>button:hover {
-    background: linear-gradient(90deg, #38bdf8, #5eead4);
-}
-
-/* ---------- CENTER INPUT ---------- */
+/* -------- CENTER INPUT -------- */
 .center-box {
     display: flex;
     justify-content: center;
+    margin-bottom: 1.2rem;
 }
 
 .center-box input {
@@ -103,23 +93,32 @@ body {
     font-size: 1rem;
 }
 
-/* ---------- HEADINGS ---------- */
-.section-title {
-    color: #5eead4;
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+/* -------- BUTTON -------- */
+.stButton>button {
+    background: linear-gradient(90deg, #4FE6D8, #38BDF8);
+    color: #020617;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0.6em 1.6em;
+    border: none;
+}
+.stButton>button:hover {
+    background: linear-gradient(90deg, #38BDF8, #4FE6D8);
+}
+
+hr {
+    border: 1px solid rgba(79,230,216,0.35);
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ================= TITLE =================
+# ================= TITLE (ONE LINE, CENTERED) =================
 st.markdown("""
-<div class="app-title">
-    <div class="title-main">🤖 Leveraging Agentic AI</div>
-    <div class="title-sub">for Automated Interview Questioning and Performance Evaluation 🚀</div>
+<div class="center-title">
+🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
 </div>
+<hr>
 """, unsafe_allow_html=True)
 
 # ================= GEMINI CONFIG =================
@@ -132,21 +131,21 @@ def safe_generate(prompt):
     except Exception:
         return "⚠️ AI response unavailable due to API limits."
 
-# ================= PDF EXTRACTION =================
+# ================= PDF READER =================
 def extract_text_from_pdf(file):
     reader = PyPDF2.PdfReader(file)
     return " ".join([p.extract_text() or "" for p in reader.pages])
 
 # ================= SESSION STATE =================
-for key, default in {
+for k, v in {
     "questions": [],
     "answers": {},
     "feedback": {},
     "started": False,
     "summary": ""
 }.items():
-    if key not in st.session_state:
-        st.session_state[key] = default
+    if k not in st.session_state:
+        st.session_state[k] = v
 
 # ================= JOB ROLE =================
 st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allow_html=True)
@@ -181,7 +180,7 @@ with col2:
 if st.button("🚀 Start Interview") and job_role and jd_text and resume_text:
 
     summary_prompt = f"""
-    Summarize this context into bullet points (max 120 words):
+    Summarize into bullet points (max 120 words):
     Role: {job_role}
     JD: {jd_text}
     Resume: {resume_text}
@@ -190,7 +189,7 @@ if st.button("🚀 Start Interview") and job_role and jd_text and resume_text:
     st.session_state.summary = safe_generate(summary_prompt)
 
     q_prompt = f"""
-    From this context, generate EXACTLY 2 interview questions.
+    Generate EXACTLY 2 interview questions from this context.
     Return only numbered questions.
     Context:
     {st.session_state.summary}
@@ -213,17 +212,16 @@ if st.session_state.started:
 
         if answer and i not in st.session_state.answers:
             st.session_state.answers[i] = answer
-
-            fb_prompt = f"""
-            Question: {q}
-            Answer: {answer}
-            Give:
-            - 2 strengths
-            - 2 weaknesses
-            - 2 improvements
-            """
-
-            st.session_state.feedback[i] = safe_generate(fb_prompt)
+            st.session_state.feedback[i] = safe_generate(
+                f"""
+                Question: {q}
+                Answer: {answer}
+                Give:
+                - 2 strengths
+                - 2 weaknesses
+                - 2 improvements
+                """
+            )
 
         if i in st.session_state.feedback:
             st.markdown("#### 🧠 AI Feedback")
@@ -232,14 +230,9 @@ if st.session_state.started:
         st.markdown('</div>', unsafe_allow_html=True)
 
     if len(st.session_state.answers) == len(st.session_state.questions):
-        rating_prompt = f"""
-        Rate overall interview out of 10.
-        Answers: {st.session_state.answers}
-        Format:
-        Rating: X/10
-        Reason: one line
-        """
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("### ⭐ Final Rating")
-        st.write(safe_generate(rating_prompt))
+        st.write(safe_generate(
+            f"Rate interview out of 10. Answers: {st.session_state.answers}"
+        ))
         st.markdown('</div>', unsafe_allow_html=True)
