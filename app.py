@@ -55,7 +55,7 @@ body {
     text-align: center;
     font-size: 1.25rem;
     color: #E6FFFA;
-    margin-bottom: 1.4rem;
+    margin-bottom: 2.4rem;
 }
 
 /* ---------- SECTION HEADERS ---------- */
@@ -477,5 +477,6 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
 
 
