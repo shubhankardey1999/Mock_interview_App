@@ -123,6 +123,9 @@ label,
     border-radius: 10px;
     padding: 0.6em 1.6em;
     border: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .stButton>button:hover {
@@ -199,26 +202,40 @@ hr {
     font-style: italic;
 }
 
-/* ---------- CENTERED BUTTON CONTAINER ---------- */
-.button-container {
+/* ---------- REMOVE EXTRA SPACING ---------- */
+[data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
+    gap: 0rem;
+}
+
+.st-emotion-cache-1jicfl2 {
+    padding-top: 0rem;
+}
+
+/* ---------- CENTER ALL BUTTONS ---------- */
+div[data-testid="column"] .stButton {
     display: flex;
     justify-content: center;
-    margin: 2rem 0;
 }
 
-.button-container .stButton {
-    display: inline-block;
+/* ---------- REMOVE UNNECESSARY PADDING ---------- */
+.st-emotion-cache-1y4p8pa {
+    padding: 1rem 1rem 0rem;
 }
 
-/* ---------- SUBMIT BUTTON STYLE ---------- */
-.submit-btn {
-    margin-top: 1rem;
+/* ---------- HIDE EMPTY CONTAINERS ---------- */
+div.stButton > button:empty {
+    display: none;
 }
 
 /* ---------- ALERT ---------- */
 .stAlert p {
     color: #FACC15 !important;
     font-weight: 500;
+}
+
+/* ---------- FILE UPLOADER STYLING ---------- */
+.stFileUploader {
+    margin-bottom: 0.5rem;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -244,8 +261,10 @@ def safe_generate(prompt):
 
 # ================= PDF EXTRACTION =================
 def extract_text(file):
-    reader = PyPDF2.PdfReader(file)
-    return " ".join([p.extract_text() or "" for p in reader.pages])
+    if file:
+        reader = PyPDF2.PdfReader(file)
+        return " ".join([p.extract_text() or "" for p in reader.pages])
+    return ""
 
 # ================= SESSION STATE =================
 if "questions" not in st.session_state:
@@ -267,7 +286,8 @@ st.markdown('<div class="center-input">', unsafe_allow_html=True)
 job_role = st.text_input(
     "Job Role",
     placeholder="Financial Analyst, Business Analyst",
-    label_visibility="collapsed"
+    label_visibility="collapsed",
+    key="job_role_input"
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -277,48 +297,51 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Paste Job Description", height=70)
-    jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
+    jd_text = st.text_area("Paste Job Description", height=70, key="jd_text_area")
+    jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"], key="jd_uploader")
     if jd_pdf:
-        jd_text = extract_text(jd_pdf)
+        jd_text = extract_text(jd_pdf) or jd_text
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📑 Resume (PDF)</div>', unsafe_allow_html=True)
-    resume_pdf = st.file_uploader("Upload Resume", type=["pdf"])
+    resume_pdf = st.file_uploader("Upload Resume", type=["pdf"], key="resume_uploader")
     resume_text = extract_text(resume_pdf) if resume_pdf else ""
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= CENTERED START BUTTON =================
-st.markdown('<div class="button-container">', unsafe_allow_html=True)
-if st.button("🚀 Start Interview", key="start_interview") and job_role and jd_text and resume_text:
-    
-    st.session_state.summary = safe_generate(
-        f"""
-        Summarize concisely:
-        Role: {job_role}
-        Job Description: {jd_text}
-        Resume: {resume_text}
-        """
-    )
-    
-    q_text = safe_generate(
-        f"""
-        Generate EXACTLY 2 interview questions.
-        Context:
-        {st.session_state.summary}
-        Format each question on a new line.
-        """
-    )
-    
-    st.session_state.questions = [q for q in q_text.split("\n") if q.strip()]
-    st.session_state.started = True
-    st.session_state.answers = {}
-    st.session_state.feedback = {}
-    st.session_state.submitted = {}
-    st.rerun()
-st.markdown('</div>', unsafe_allow_html=True)
+# Remove extra container and use Streamlit's native centering
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    if st.button("🚀 Start Interview", key="start_interview", use_container_width=True):
+        if job_role and (jd_text or jd_pdf) and resume_pdf:
+            st.session_state.summary = safe_generate(
+                f"""
+                Summarize concisely:
+                Role: {job_role}
+                Job Description: {jd_text}
+                Resume: {resume_text}
+                """
+            )
+            
+            q_text = safe_generate(
+                f"""
+                Generate EXACTLY 2 interview questions.
+                Context:
+                {st.session_state.summary}
+                Format each question on a new line.
+                """
+            )
+            
+            st.session_state.questions = [q for q in q_text.split("\n") if q.strip()]
+            st.session_state.started = True
+            st.session_state.answers = {}
+            st.session_state.feedback = {}
+            st.session_state.submitted = {}
+            st.rerun()
+        else:
+            st.warning("Please fill in all fields: Job Role, Job Description, and upload a Resume.")
 
 # ================= INTERVIEW FLOW =================
 if st.session_state.started:
@@ -335,52 +358,52 @@ if st.session_state.started:
         st.markdown(f'<div class="question-text">{q}</div>', unsafe_allow_html=True)
         
         st.markdown('<div class="answer-label">Your Answer</div>', unsafe_allow_html=True)
-        ans = st.text_area("", key=f"a{i}", height=140)
+        ans = st.text_area("", key=f"a{i}", height=140, label_visibility="collapsed")
         
-        # Submit Button for each question
-        st.markdown('<div class="button-container submit-btn">', unsafe_allow_html=True)
-        if st.button(f"✅ Submit Answer {i+1}", key=f"submit_{i}"):
-            if ans:
-                st.session_state.answers[i] = ans
-                st.session_state.submitted[i] = True
-                
-                # Request structured HTML feedback from Gemini
-                feedback_prompt = f"""
-                Question: {q}
-                Answer: {ans}
-                
-                Provide feedback in this EXACT HTML format:
-                
-                <h4 class="feedback-header strengths-title">Strengths</h4>
-                <div class="feedback-content">
-                <ul>
-                <li>Point 1 (max 15 words)</li>
-                <li>Point 2 (max 15 words)</li>
-                </ul>
-                </div>
-                
-                <h4 class="feedback-header weaknesses-title">Weaknesses</h4>
-                <div class="feedback-content">
-                <ul>
-                <li>Point 1 (max 15 words)</li>
-                <li>Point 2 (max 15 words)</li>
-                </ul>
-                </div>
-                
-                <h4 class="feedback-header improvement-title">Improvement Tips</h4>
-                <div class="feedback-content">
-                <ul>
-                <li>Tip 1 (max 15 words)</li>
-                <li>Tip 2 (max 15 words)</li>
-                </ul>
-                </div>
-                """
-                
-                st.session_state.feedback[i] = safe_generate(feedback_prompt)
-                st.rerun()
-            else:
-                st.warning("Please enter an answer before submitting.")
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Centered Submit Button for each question
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button(f"✅ Submit Answer {i+1}", key=f"submit_{i}", use_container_width=True):
+                if ans:
+                    st.session_state.answers[i] = ans
+                    st.session_state.submitted[i] = True
+                    
+                    # Request structured HTML feedback from Gemini
+                    feedback_prompt = f"""
+                    Question: {q}
+                    Answer: {ans}
+                    
+                    Provide feedback in this EXACT HTML format:
+                    
+                    <h4 class="feedback-header strengths-title">Strengths</h4>
+                    <div class="feedback-content">
+                    <ul>
+                    <li>Point 1 (max 15 words)</li>
+                    <li>Point 2 (max 15 words)</li>
+                    </ul>
+                    </div>
+                    
+                    <h4 class="feedback-header weaknesses-title">Weaknesses</h4>
+                    <div class="feedback-content">
+                    <ul>
+                    <li>Point 1 (max 15 words)</li>
+                    <li>Point 2 (max 15 words)</li>
+                    </ul>
+                    </div>
+                    
+                    <h4 class="feedback-header improvement-title">Improvement Tips</h4>
+                    <div class="feedback-content">
+                    <ul>
+                    <li>Tip 1 (max 15 words)</li>
+                    <li>Tip 2 (max 15 words)</li>
+                    </ul>
+                    </div>
+                    """
+                    
+                    st.session_state.feedback[i] = safe_generate(feedback_prompt)
+                    st.rerun()
+                else:
+                    st.warning("Please enter an answer before submitting.")
         
         # Show feedback if submitted
         if i in st.session_state.submitted and st.session_state.submitted[i]:
