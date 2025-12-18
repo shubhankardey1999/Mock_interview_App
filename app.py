@@ -49,14 +49,14 @@ body {
     font-weight: 800;
     color: #4FE6D8;
     margin-bottom: 0.25rem;
-    margin-top: 1.5rem !important;
+    margin-top: 4.5rem !important;
 }
 
 .sub-title {
     text-align: center;
     font-size: 1.25rem;
     color: #E6FFFA;
-    margin-bottom: 1.4rem;
+    margin-bottom: 2.4rem;
 }
 
 /* ---------- SECTION HEADERS ---------- */
@@ -276,7 +276,7 @@ st.markdown("""
 
 # ================= GEMINI CONFIG =================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-flash-native-audio-dialog")
 
 def safe_generate(prompt):
     try:
@@ -505,3 +505,4 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
