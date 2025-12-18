@@ -71,7 +71,7 @@ body {
 
 /* ---------- CARDS ---------- */
 .card {
-    /*background: rgba(15,23,42,0.92);*/
+    background: rgba(15,23,42,0.92);
     border: 1px solid rgba(79,230,216,0.35);
     border-radius: 14px;
     padding: 1rem;
@@ -401,7 +401,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 if st.session_state.started:
 
     for i, q in enumerate(st.session_state.questions):
-        st.markdown('<div class="card">', unsafe_allow_html=True)
+        #st.markdown('<div class="card">', unsafe_allow_html=True)
 
         # Colored Question Title
         st.markdown(
@@ -511,6 +511,7 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
 
 
 
