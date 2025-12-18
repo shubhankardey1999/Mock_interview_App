@@ -73,7 +73,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("## 📄 Job Description")
-    jd_text = st.text_area("Paste Job Description", height=180)
+    jd_text = st.text_area("Paste Job Description", height=100)
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
     if jd_pdf:
         jd_text = extract_text_from_pdf(jd_pdf)
@@ -169,3 +169,4 @@ if st.session_state.started:
 
         st.subheader("⭐ Final Rating")
         st.write(safe_generate(rating_prompt))
+
