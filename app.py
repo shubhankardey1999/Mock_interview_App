@@ -175,9 +175,9 @@ hr {
 
 # ================= TITLES =================
 st.markdown("""
-<div class="main-title">🤖 AI BASED MOCK INTERVIEW</div>
+<div class="main-title">AI BASED MOCK INTERVIEW APP</div>
 <div class="sub-title">
-Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
+🤖 Leveraging Agentic AI for Automated Interview Questioning and Performance Evaluation 🚀
 </div>
 <hr>
 """, unsafe_allow_html=True)
@@ -225,7 +225,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Paste Job Description", height=170)
+    jd_text = st.text_area("Paste Job Description", height=70)
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"])
     if jd_pdf:
         jd_text = extract_text(jd_pdf)
@@ -304,3 +304,4 @@ if st.session_state.started:
             f'<div class="card"><div class="rating-text">⭐ Final Rating<br>{rating}</div></div>',
             unsafe_allow_html=True
         )
+
