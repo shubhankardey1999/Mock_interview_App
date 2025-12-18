@@ -346,7 +346,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">📄 Job Description</div>', unsafe_allow_html=True)
-    jd_text = st.text_area("Paste Job Description", height=70, key="jd_text_area")
+    jd_text = st.text_area("Write Job Description", height=70, key="jd_text_area")
     jd_pdf = st.file_uploader("Upload Job Description (PDF)", type=["pdf"], key="jd_uploader")
     if jd_pdf:
         jd_text = extract_text(jd_pdf) or jd_text
@@ -354,8 +354,8 @@ with col1:
 
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">📑 Resume (PDF)</div>', unsafe_allow_html=True)
-    resume_pdf = st.file_uploader("Upload Resume", type=["pdf"], key="resume_uploader")
+    st.markdown('<div class="section-title">📑 Resume </div>', unsafe_allow_html=True)
+    resume_pdf = st.file_uploader("Upload Resume (Only PDF format)", type=["pdf"], key="resume_uploader")
     resume_text = extract_text(resume_pdf) if resume_pdf else ""
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -505,5 +505,6 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
 
 
