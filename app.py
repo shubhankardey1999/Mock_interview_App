@@ -48,7 +48,7 @@ body {
     font-weight: 800;
     color: #4FE6D8;
     margin-bottom: 0.25rem;
-    margin-top: 1.5rem !important;
+    margin-top: 2.5rem !important;
 }
 
 .sub-title {
@@ -477,3 +477,4 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
