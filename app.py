@@ -334,7 +334,7 @@ st.markdown('<div class="section-title">👨‍💼 Job Role</div>', unsafe_allo
 st.markdown('<div class="center-input">', unsafe_allow_html=True)
 job_role = st.text_input(
     "Job Role",
-    placeholder="Financial Analyst, Business Analyst",
+    placeholder="Software Engineer, Marketing Executive, Business Analyst, HRBP..",
     label_visibility="collapsed",
     key="job_role_input"
 )
@@ -505,6 +505,7 @@ if st.session_state.started:
             ''',
             unsafe_allow_html=True
         )
+
 
 
 
